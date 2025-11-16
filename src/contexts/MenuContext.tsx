@@ -4,7 +4,7 @@
 // Sorumluluğu: Uygulama genelindeki menü ve yetki verilerini yönetmek ve
 // alt bileşenlere dağıtmak (Pinia store'un karşılığı).
 // ===================================================================
-import React, { createContext, useState, type ReactNode } from 'react';
+import  { createContext, useState, type ReactNode } from 'react';
 import type { MenuState } from '../types';
 
 // Örnek verilerle bir başlangıç state'i oluşturuyoruz.

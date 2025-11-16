@@ -1,36 +1,34 @@
-import React, { useState, useEffect } from "react";
-
-// 1. Gerçek Servis ve Context Importları
-import * as productService from "../services/productService"; // Backend ile konuşan servis
-
-// 2. Gerçek Bileşen Importları
-// (Dosya yollarının projenizdeki yerlerle eşleştiğinden emin olun)
+import { useState, useEffect } from "react";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 import ProductCard from "../components/layout/ProductCard";
-import AddPieceModal from "../components/layout/AddPieceModal";
+import AddPieceModal, {
+  Category,
+  FormData,
+} from "../components/layout/AddPieceModal";
+import { useAuth } from "../hooks/useAuth";
+import * as productService from "../services/productService";
 
-import { useAuth } from "../hooks/useAuth"; // Auth Context Hook
+type Product = {
+  id: number;
+  name: string;
+  imageUrl: string;
+  categoryId: number;
+};
 
-function WardrobePage() {
-  // --- State Yönetimi ---
+const WardrobePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(null); // null = "Tümü"
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategory, setActiveCategory] = useState<number | null>(null);
 
-  // Yüklenme ve Hata Durumları
   const [isPageLoading, setIsPageLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Auth Context'ten kullanıcının giriş durumunu al
   const { isLoggedIn, isLoading: isAuthLoading } = useAuth();
 
-  // --- VERİ ÇEKME (Backend'den) ---
-
-  // 1. Kategorileri Yükle (Sayfa açılışında 1 kere)
+  // Kategorileri yükle
   useEffect(() => {
-    // Auth yükleniyorsa veya kullanıcı giriş yapmadıysa bekle
     if (isAuthLoading || !isLoggedIn) {
       if (!isAuthLoading) setIsPageLoading(false);
       return;
@@ -38,11 +36,10 @@ function WardrobePage() {
 
     const loadCategories = async () => {
       try {
-        // Backend: GET /api/categories
         const data = await productService.getCategories();
         setCategories(data);
       } catch (err) {
-        console.error("Kategori yükleme hatası:", err);
+        console.error(err);
         setError("Kategoriler yüklenemedi.");
       }
     };
@@ -50,7 +47,7 @@ function WardrobePage() {
     loadCategories();
   }, [isLoggedIn, isAuthLoading]);
 
-  // 2. Ürünleri Yükle (Kategori değiştiğinde veya giriş yapıldığında)
+  // Ürünleri yükle
   useEffect(() => {
     if (isAuthLoading || !isLoggedIn) return;
 
@@ -58,12 +55,10 @@ function WardrobePage() {
       setIsPageLoading(true);
       setError(null);
       try {
-        // Backend: GET /api/products (veya ?categoryId=...)
-        // productService token'ı otomatik ekler (apiClient sayesinde)
         const data = await productService.getProducts(activeCategory);
         setProducts(data);
       } catch (err) {
-        console.error("Ürün yükleme hatası:", err);
+        console.error(err);
         setError("Ürünler yüklenirken bir sorun oluştu.");
       } finally {
         setIsPageLoading(false);
@@ -73,48 +68,36 @@ function WardrobePage() {
     loadProducts();
   }, [isLoggedIn, isAuthLoading, activeCategory]);
 
-  // --- OLAY YÖNETİCİLERİ (Handlers) ---
-
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // Yeni Parça Ekle (Backend'e POST)
-  const handleAddPiece = async (formData) => {
+  const handleAddPiece = async (formData: FormData) => {
     try {
-      // Backend: POST /api/products
       const newProduct = await productService.createProduct(formData);
-
-      // Başarılıysa listeyi güncelle (sayfa yenilemeden)
       setProducts((prev) => [newProduct, ...prev]);
       closeModal();
-    } catch (err) {
+    } catch (err: any) {
       alert("Hata: " + (err.response?.data?.message || err.message));
     }
   };
 
-  // Parça Sil (Backend'e DELETE)
-  const handleDeletePiece = async (productId) => {
+  const handleDeletePiece = async (productId: number) => {
     if (!window.confirm("Bu parçayı silmek istediğinizden emin misiniz?"))
       return;
 
     try {
-      // Backend: DELETE /api/products/{id}
       await productService.deleteProduct(productId);
-
-      // Başarılıysa listeden çıkar
       setProducts((prev) => prev.filter((p) => p.id !== productId));
-    } catch (err) {
+    } catch (err: any) {
       alert("Silme Hatası: " + (err.response?.data?.message || err.message));
     }
   };
 
-  // --- RENDER ---
   return (
     <>
       <Navbar />
       <div className="bg-white min-h-screen">
         <main className="w-full max-w-7xl mx-auto px-4 md:px-10 py-12">
-          {/* Başlık ve Ekle Butonu */}
           <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
             <h1 className="text-4xl md:text-5xl font-serif-display font-bold">
               Gardırobum
@@ -124,20 +107,10 @@ function WardrobePage() {
               disabled={!isLoggedIn}
               className="bg-zinc-900 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-zinc-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {/* SVG Artı İkonu */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="w-5 h-5"
-              >
-                <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-              </svg>
-              <span>Yeni Parça Ekle</span>
+              Yeni Parça Ekle
             </button>
           </div>
 
-          {/* Kategori Sekmeleri */}
           <div className="flex space-x-2 mb-8 overflow-x-auto pb-2">
             <button
               onClick={() => setActiveCategory(null)}
@@ -164,22 +137,19 @@ function WardrobePage() {
             ))}
           </div>
 
-          {/* İçerik Alanı */}
           {!isLoggedIn ? (
             <div className="text-center py-20 text-gray-500">
-              Gardırobunuzu görmek için lütfen giriş yapın.
+              Giriş yapmalısınız.
             </div>
           ) : isPageLoading ? (
-            <div className="text-center py-20 text-gray-500">
-              Gardırobunuz yükleniyor...
-            </div>
+            <div className="text-center py-20 text-gray-500">Yükleniyor...</div>
           ) : error ? (
             <div className="text-center py-20 text-red-600">{error}</div>
           ) : products.length === 0 ? (
             <div className="text-center py-20 text-gray-500">
               {activeCategory
-                ? "Bu kategoride henüz parça yok."
-                : "Gardırobunuz boş, yeni parçalar ekleyin!"}
+                ? "Bu kategoride parça yok."
+                : "Gardırobunuz boş."}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
@@ -196,7 +166,6 @@ function WardrobePage() {
 
         <Footer />
 
-        {/* Modal Bileşeni */}
         <AddPieceModal
           isOpen={isModalOpen}
           onClose={closeModal}
@@ -206,6 +175,6 @@ function WardrobePage() {
       </div>
     </>
   );
-}
+};
 
 export default WardrobePage;
