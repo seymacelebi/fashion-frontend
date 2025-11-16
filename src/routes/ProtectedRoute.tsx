@@ -1,7 +1,7 @@
 // src/routes/ProtectedRoute.tsx
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const ProtectedRoute = () => {
   const { isLoggedIn, isLoading } = useAuth();
@@ -10,12 +10,12 @@ const ProtectedRoute = () => {
   if (isLoading) {
     return <div>Yükleniyor...</div>;
   }
-  
+
   // Eğer kullanıcı giriş yapmamışsa, login sayfasına yönlendir
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
-  
+
   // Giriş yapmışsa, istenen sayfayı göster
   return <Outlet />;
 };
