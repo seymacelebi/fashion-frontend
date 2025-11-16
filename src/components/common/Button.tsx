@@ -1,5 +1,3 @@
-
-
 // interface ButtonProps {
 //   children: React.ReactNode;
 //   onClick?: () => void;
@@ -20,9 +18,7 @@
 
 // export default Button;
 
-import React from 'react';
-
-const Button = ({ children, onClick, className = '' }) => {
+const Button = ({ children, onClick, className = "" }) => {
   return (
     <button
       onClick={onClick}

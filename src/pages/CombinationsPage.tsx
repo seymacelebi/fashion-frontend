@@ -1,12 +1,25 @@
-// src/pages/CombinationPage.js
+// src/pages/CombinationPage.tsx
 import { useState } from "react";
 import ProductCard from "../components/layout/ProductCard";
 import AddPieceModal from "../components/layout/AddPieceModal";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 
-// 1. Başlangıç verilerini (normalde API'den gelir) tanımlayalım
-const initialCombinations = [
+// Örnek tipler
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Combination {
+  id: number;
+  name: string;
+  category: string;
+  imageUrl: string;
+}
+
+// Başlangıç kombinleri
+const initialCombinations: Combination[] = [
   {
     id: 1,
     name: "Hafta Sonu Kombini",
@@ -27,61 +40,48 @@ const initialCombinations = [
   },
 ];
 
-const categories = ["Tümü", "Günlük", "İş", "Özel Davet"];
-
-// Kategori ID'lerini isimlerle eşleştirmek için bir yardımcı
-const categoryMap = {
-  1: "Günlük",
-  2: "İş",
-  3: "Özel Davet",
-};
+// Modal için kategoriler
+const categories: Category[] = [
+  { id: 0, name: "Tümü" },
+  { id: 1, name: "Günlük" },
+  { id: 2, name: "İş" },
+  { id: 3, name: "Özel Davet" },
+];
 
 function CombinationPage() {
-  // 2. State'leri tanımlayalım
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // 'products' state'ini 'combinations' olarak yeniden adlandırdık
-  const [combinations, setCombinations] = useState(initialCombinations);
-  const [activeCategory, setActiveCategory] = useState("Tümü");
+  const [combinations, setCombinations] =
+    useState<Combination[]>(initialCombinations);
+  const [activeCategory, setActiveCategory] = useState<string>("Tümü");
 
-  // 3. Olay Yöneticileri (Event Handlers)
-  // Modal'ı aç/kapat
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // Yeni kombin ekleme
-  const handleAddCombination = (formData: any) => {
-    // API'ye gönderme simülasyonu
-    console.log("API'ye gönderilen kombin verisi:", formData);
-
-    // Yeni kombini oluştur ve listeye ekle
-    const newCombination = {
-      id: combinations.length + 5, // Gerçek bir DB'de bu ID'yi sunucu verir
+  // Yeni parça ekleme (modal için)
+  const handleAddPiece = (formData: {
+    name: string;
+    imageUrl: string;
+    categoryId: number;
+  }) => {
+    const newCombination: Combination = {
+      id: combinations.length + 1,
       name: formData.name,
       imageUrl: formData.imageUrl,
-      category: categoryMap[formData.categoryId], // ID'yi isme çevir
+      category:
+        categories.find((c) => c.id === formData.categoryId)?.name || "Tümü",
     };
-
-    setCombinations((prevCombinations) => [
-      ...prevCombinations,
-      newCombination,
-    ]);
-    closeModal(); // Modalı kapat
+    setCombinations((prev) => [newCombination, ...prev]);
+    closeModal();
   };
 
-  // Kombin silme
-  const handleDeleteCombination = (combinationId: any) => {
-    // API'ye DELETE isteği simülasyonu
-    console.log(`Kombin ${combinationId} siliniyor...`);
-    setCombinations((prevCombinations) =>
-      prevCombinations.filter((c) => c.id !== combinationId)
-    );
+  const handleDeleteCombination = (combinationId: number) => {
+    setCombinations((prev) => prev.filter((c) => c.id !== combinationId));
   };
 
-  // 4. Filtrelenmiş kombin listesini hesapla
-  const filteredCombinations = combinations.filter((combination) => {
-    if (activeCategory === "Tümü") return true;
-    return combination.category === activeCategory;
-  });
+  // Filtrelenmiş kombinler
+  const filteredCombinations = combinations.filter(
+    (c) => activeCategory === "Tümü" || c.category === activeCategory
+  );
 
   return (
     <>
@@ -95,7 +95,6 @@ function CombinationPage() {
             </h1>
 
             <button
-              id="addCombinationBtn" // ID güncellendi
               onClick={openModal}
               className="bg-zinc-900 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-zinc-700 transition-colors flex items-center space-x-2"
             >
@@ -112,27 +111,27 @@ function CombinationPage() {
           </div>
 
           <div className="flex space-x-2 mb-8" id="categoryTabs">
-            {categories.map((category) => (
+            {categories.map((c) => (
               <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
+                key={c.id}
+                onClick={() => setActiveCategory(c.name)}
                 className={`tab-btn px-4 py-2 rounded-md text-sm transition-colors ${
-                  activeCategory === category
-                    ? "bg-zinc-900 text-white" // Aktif stil
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200" // Pasif stil
+                  activeCategory === c.name
+                    ? "bg-zinc-900 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                {category}
+                {c.name}
               </button>
             ))}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {filteredCombinations.map((combination) => (
+            {filteredCombinations.map((c) => (
               <ProductCard
-                key={combination.id}
-                product={combination} // ProductCard 'product' prop'u bekliyor
-                onDelete={handleDeleteCombination} // Silme fonksiyonu güncellendi
+                key={c.id}
+                product={c}
+                onDelete={handleDeleteCombination}
               />
             ))}
           </div>
@@ -140,12 +139,12 @@ function CombinationPage() {
 
         <Footer />
 
-   <AddPieceModal
-  isOpen={isModalOpen}
-  onClose={closeModal}
-  onSubmit={handleAddPiece}
-  categories={categories}  // <-- bunu ekle
-/>
+        <AddPieceModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onSubmit={handleAddPiece}
+          categories={categories}
+        />
       </div>
     </>
   );
