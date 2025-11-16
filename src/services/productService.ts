@@ -3,10 +3,11 @@ import apiClient from "./apiClients";
 // --- Backend DTO'ları ile Eşleşen Tipler ---
 
 // ProductDto'nuza karşılık gelir
-export interface Product {
+interface Product {
   id: number;
   name: string;
   imageUrl: string;
+  categoryId: number; // burada zorunlu
   categoryName: string;
   userId: number;
 }
