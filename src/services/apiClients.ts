@@ -6,8 +6,17 @@ import axios from "axios";
 // API adresini doğrudan koda yazmak yerine, bir .env dosyasından okumak
 // en iyi pratiktir. Bu, geliştirme (localhost) ve production (gerçek sunucu)
 // ortamları arasında kolayca geçiş yapmanızı sağlar.
+// const API_BASE_URL =
+//   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+
+// src/services/apiClients.ts
+
+// ESKİ HALİ:
+// const API_BASE_URL = 'http://localhost:8080/api';
+
+// YENİ HALİ (BUNU KULLANIN):
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+  "[https://fashion-backend-l6pnd.onrender.com/api](https://fashion-backend-l6pnd.onrender.com/api)";
 
 // --- PROFESYONEL YAKLAŞIM 2: Merkezi Axios İstemcisi (Centralized Client) ---
 // Her API isteği için fetch ayarlarını tekrar tekrar yazmak yerine,
