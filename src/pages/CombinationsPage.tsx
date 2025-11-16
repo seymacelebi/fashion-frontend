@@ -140,11 +140,12 @@ function CombinationPage() {
 
         <Footer />
 
-        <AddPieceModal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          onSubmit={handleAddCombination}
-        />
+   <AddPieceModal
+  isOpen={isModalOpen}
+  onClose={closeModal}
+  onSubmit={handleAddPiece}
+  categories={categories}  // <-- bunu ekle
+/>
       </div>
     </>
   );

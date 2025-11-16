@@ -1,6 +1,4 @@
-// import React from 'react';
-// import MainLayout from '../components/layout/MainLayout';
-// import Button from '../components/common/Button';
+
 
 import Footer from "../components/layout/Footer";
 import Navbar from "../components/layout/Navbar";
