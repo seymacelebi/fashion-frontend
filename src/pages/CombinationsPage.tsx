@@ -1,7 +1,7 @@
 // src/pages/CombinationPage.tsx
 import { useState } from "react";
 import ProductCard from "../components/layout/ProductCard";
-import AddPieceModal from "../components/layout/AddPieceModal";
+import AddPieceModal from "../components/layout/AddItemModal";
 import Navbar from "../components/layout/Navbar";
 import Footer from "../components/layout/Footer";
 

@@ -2,37 +2,32 @@
 // merkezi bir yerde toplamak ve yapılandırılmış bir axios istemcisi sağlamak.
 import axios from "axios";
 
-// --- PROFESYONEL YAKLAŞIM 1: Ortam Değişkenleri (Environment Variables) ---
-// API adresini doğrudan koda yazmak yerine, bir .env dosyasından okumak
-// en iyi pratiktir. Bu, geliştirme (localhost) ve production (gerçek sunucu)
-// ortamları arasında kolayca geçiş yapmanızı sağlar.
-// const API_BASE_URL =
-//   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+// --- PROFESYONEL YAKLAŞIM: Otomatik Ortam Algılama ---
+// Uygulama 'localhost' üzerindeyse yerel backend'e,
+// değilse (Netlify, Render vb.) canlı backend'e istek atar.
+// Bu sayede kodu her seferinde değiştirmek zorunda kalmazsınız.
 
-// src/services/apiClients.ts
-
-// ESKİ HALİ:
-// const API_BASE_URL = 'http://localhost:8080/api';
-
-// YENİ HALİ (BUNU KULLANIN):
 const API_BASE_URL =
-  "[https://fashion-backend-l6pnd.onrender.com/api](https://fashion-backend-l6pnd.onrender.com/api)";
+  window.location.hostname === "localhost"
+    ? "http://localhost:8080/api" // Yerel Geliştirme (Local)
+    : "https://fashion-backend-l6pnd.onrender.com/api"; // Canlı (Production)
 
-// --- PROFESYONEL YAKLAŞIM 2: Merkezi Axios İstemcisi (Centralized Client) ---
+// --- Merkezi Axios İstemcisi (Centralized Client) ---
 // Her API isteği için fetch ayarlarını tekrar tekrar yazmak yerine,
 // tüm ayarları (baseURL, timeout vb.) içeren tek bir "istemci" oluştururuz.
-// Bu, "Kendini Tekrar Etme" (DRY) prensibinin temelidir.
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  // timeout: 10000, // İsteklerin 10 saniye içinde zaman aşımına uğramasını sağlayabilirsiniz.
+  // timeout: 10000, // İsteğe bağlı: 10 saniye zaman aşımı
 });
 
-// --- PROFESYONEL YAKLAŞIM 3: İstek Interceptor'ı (Request Interceptor) ---
+// --- İstek Interceptor'ı (Request Interceptor) ---
 // Bu bölüm, uygulamanızdan gönderilen HER BİR API isteğini,
 // sunucuya ulaşmadan hemen önce "yakalar" ve üzerinde değişiklik yapar.
 apiClient.interceptors.request.use(
   (config) => {
     // localStorage'dan token'ı al.
+    // NOT: AuthContext'inizde 'token' anahtarını kullanıyorsanız burası 'token' olmalı.
+    // Eğer 'authToken' kullanıyorsanız, burayı da 'authToken' yapın.
     const token = localStorage.getItem("token");
 
     // Eğer token varsa, isteğin "Authorization" başlığına "Bearer [token]"
@@ -49,7 +44,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// --- PROFESYONEL YAKLAŞIM 4: Yanıt Interceptor'ı (Response Interceptor) ---
+// --- Yanıt Interceptor'ı (Response Interceptor) ---
 // Bu bölüm, sunucudan gelen HER BİR yanıtı, uygulamanızın
 // geri kalanına ulaşmadan hemen önce "yakalar". Hata yönetimi için mükemmeldir.
 apiClient.interceptors.response.use(

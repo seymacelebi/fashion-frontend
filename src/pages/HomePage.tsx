@@ -3,19 +3,6 @@
 import Footer from "../components/layout/Footer";
 import Navbar from "../components/layout/Navbar";
 
-// const HomePage = () => {
-//   return (
-//     <MainLayout>
-//       <div className="text-center">
-//         <h1 className="text-4xl font-bold text-gray-800 mb-4">Ana Sayfaya Hoş Geldiniz!</h1>
-//         <p className="text-gray-600 mb-8">Bu, Tailwind CSS ile oluşturulmuş harika bir başlangıç sayfasıdır.</p>
-//         <Button onClick={() => alert('Butona tıklandı!')}>
-//           Daha Fazla Bilgi
-//         </Button>
-//       </div>
-//     </MainLayout>
-//   );
-// };
 
 // export default HomePage;
    const HeroSection = () => {
