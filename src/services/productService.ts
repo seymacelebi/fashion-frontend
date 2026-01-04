@@ -26,8 +26,6 @@ export const createProduct = async (
   data: ProductCreateData
 ): Promise<Product> => {
   const formData = new FormData();
-
-  // Basit alanları ekle
   formData.append("name", data.name);
 
   // Swagger dokümanında nesne olarak görünse de,
@@ -40,9 +38,7 @@ export const createProduct = async (
   formData.append("season", data.season);
   formData.append("style", data.style);
 
-  // --- DÜZELTİLEN KISIM: Tek Seferlik ve Kontrollü Gönderim ---
   if (data.imageFile) {
-    // Backend'deki Controller'da @RequestParam("image") ismiyle birebir aynı olmalı
     formData.append("image", data.imageFile);
   }
 
@@ -55,6 +51,33 @@ export const createProduct = async (
   return response.data;
 };
 
+export const updateProduct = async (
+  productId: number,
+  data: ProductCreateData
+): Promise<Product> => {
+  const formData = new FormData();
+  formData.append("name", data.name);
+  formData.append("brandName", data.brandName);
+  formData.append("categoryId", data.categoryId.toString());
+  formData.append("color", data.color);
+  formData.append("season", data.season);
+  formData.append("style", data.style);
+  if (data.imageFile) {
+    formData.append("image", data.imageFile);
+  }
+  console.log(formData, "formDataUpdateeee");
+  const response = await apiClient.put<Product>(
+    `/products/${productId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+
+  return response.data;
+};
+
 export const deleteProduct = async (productId: number): Promise<void> => {
+  console.log(productId, "productId");
   await apiClient.delete(`/products/${productId}`);
 };
