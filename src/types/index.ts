@@ -18,19 +18,60 @@ export interface AuthContextType {
   logout: () => void;
 }
 
+export const Season = {
+  SUMMER: "SUMMER",
+  WINTER: "WINTER",
+  SPRING: "SPRING",
+  AUTUMN: "AUTUMN",
+} as const;
+
+export type Season = (typeof Season)[keyof typeof Season];
+
+// 2. Tarz Tanımı
+export const Style = {
+  CASUAL: "CASUAL",
+  CLASSIC: "CLASSIC",
+  SPORT: "SPORT",
+  PARTY: "PARTY",
+} as const;
+
+export interface Brand {
+  id: number;
+  name: string;
+  logoUrl?: string;
+  affiliateLinkBase?: string;
+}
+
+export type Style = (typeof Style)[keyof typeof Style];
 
 // Backend'deki Product entity'sine karşılık gelen tip
 export interface Product {
   id: number;
   name: string;
   imageUrl: string;
-  category: Category; // Product'ın bir kategorisi olduğunu belirtiyoruz.
+  categoryName: string;
+  userId: number;
+  color?: string;
+  season?: Season;
+  style?: Style;
+  brand?: Brand; // Marka artık bir nesne
+  price?: number;
 }
 
 // Sorumluluğu: Sadece Kategori veri modelini tanımlamak.
 export interface Category {
   id: number;
   name: string;
+}
+
+export interface ProductCreateData {
+  name: string;
+  brandName: string; 
+  categoryId: number;
+  color: string;
+  season: Season;
+  style: Style;
+  imageFile: File | null; 
 }
 
 // Sorumluluğu: Sadece Kombin veri modelini tanımlamak.
@@ -42,9 +83,3 @@ export interface Combination {
   category: string; // Veya Category tipi de olabilir
   imageUrl: string;
 }
-
-
-
-// Gelecekte diğer tipleriniz de buraya eklenebilir:
-// export interface User { ... }
-// export interface Product { ... }

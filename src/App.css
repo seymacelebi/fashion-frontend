@@ -40,3 +40,33 @@
 .read-the-docs {
   color: #888;
 }
+
+/* App.css en altı */
+
+/* Kaydırma özelliğini bozmadan scrollbar'ı tamamen gizler */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE ve Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Sidebar için daha profesyonel, ince bir scrollbar tasarımı */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e7e5e4; /* stone-200 */
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d6d3d1; /* stone-300 */
+}

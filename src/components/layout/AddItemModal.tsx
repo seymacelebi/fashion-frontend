@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
   createProduct,
   getCategories,
-  Season,
-  Style,
 } from "../../services/productService";
+import { Season, Style } from "../../types";
 
 const AddItemModal = ({ isOpen, onClose, onSuccess }) => {
   const [imageUrlPreview, setImageUrlPreview] = useState(null);
