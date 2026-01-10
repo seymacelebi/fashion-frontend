@@ -108,7 +108,7 @@ const SidebarList: React.FC<SidebarListProps> = ({
                     {item.name}
                   </h4>
                   <p className="text-[11px] text-stone-500">
-                    {item.brand?.name || "Markasız"} • {item.season}
+                    {item.brandName || "Markasız"} • {item.season}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <span

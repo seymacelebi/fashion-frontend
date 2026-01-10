@@ -58,7 +58,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, onDelete, onEdit }) => {
                 {item.name}
               </h2>
               <p className="text-sm text-stone-500">
-                {item.brand?.name || "Markasız"} • {item.season}
+                {item.brandName || "Markasız"} • {item.season}
               </p>
             </div>
             <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">

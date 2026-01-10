@@ -91,11 +91,9 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, getInitialState());
 
-  // AuthContext.tsx içindeki login fonksiyonu
   const login = useCallback(async (email: string, password: string) => {
     dispatch({ type: "INITIALIZE" });
     try {
-      // authService artık bize { user, token } yapısında veri dönüyor
       const { user, token } = await authService.loginWithCredentials(
         email,
         password
@@ -126,9 +124,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const register = useCallback(
+    async (username: string, email: string, password: string) => {
+      dispatch({ type: "INITIALIZE" });
+      try {
+        // authService içindeki registerUser'ı çağırıyoruz
+        const data = await authService.register(username, email, password);
+
+        // Kayıt başarılıysa token ve user'ı kaydet
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        dispatch({ type: "LOGIN_SUCCESS", payload: data.user });
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.message || "Kayıt başarısız.";
+        dispatch({ type: "AUTH_FAILURE", payload: errorMessage });
+        throw error; // Sayfanın catch bloğuna düşmesi için fırlatıyoruz
+      }
+    },
+    []
+  );
+
   const value = useMemo(
-    () => ({ ...state, login, logout }),
-    [state, login, logout]
+    () => ({ ...state, login, register, logout }),
+    [state, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

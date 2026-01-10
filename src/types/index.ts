@@ -54,7 +54,8 @@ export interface Product {
   color?: string;
   season?: Season;
   style?: Style;
-  brand?: Brand; // Marka artık bir nesne
+ // brand?: Brand; 
+  brandName?: string;
   price?: number;
 }
 

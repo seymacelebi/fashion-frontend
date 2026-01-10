@@ -1,12 +1,10 @@
-// Bu dosyayı src/types klasörü içine oluşturun.
-// Sorumluluğu: Kimlik doğrulama ile ilgili tüm tipleri tanımlamak.
+// src/types/auth.types.ts
 
 export interface User {
-  id: string;
+  id: number; // Backend userId: number gönderdiği için number kalması daha iyi
   email: string;
   name: string;
-  // Gerçek bir JWT token'ı da burada saklanabilir.
-  token?: string; 
+  token?: string;
 }
 
 export interface AuthState {
@@ -16,8 +14,13 @@ export interface AuthState {
   error: string | null;
 }
 
-// Context'in hem state'i hem de fonksiyonları içermesi için
 export interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
+  // YENİ: Register fonksiyonunu buraya ekliyoruz
+  register: (
+    username: string,
+    email: string,
+    password: string
+  ) => Promise<void>;
   logout: () => void;
 }

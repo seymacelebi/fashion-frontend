@@ -5,6 +5,7 @@ import CombinationsPage from "./pages/CombinationsPage";
 import WardrobePage from "./pages/WardrobePage";
 import LoginPage from "./pages/LoginPage";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
       />
       <Route path="/combinations" element={<CombinationsPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       {/* Gelecekte 404 sayfası için: <Route path="*" element={<NotFoundPage />} /> */}
     </Routes>
   );
