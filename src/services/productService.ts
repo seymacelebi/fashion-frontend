@@ -18,19 +18,18 @@ export const getProducts = async (
   return response.data;
 };
 
-/**
- * Ürün oluşturma fonksiyonu.
- * FormData kullanarak multipart/form-data isteği gönderir.
- */
+export const getProductById = async (productId: number): Promise<Product> => {
+  const response = await apiClient.get<Product>(`/products/${productId}`);
+  console.log(response, "response");
+  return response.data;
+};
+
 export const createProduct = async (
   data: ProductCreateData
 ): Promise<Product> => {
   const formData = new FormData();
   formData.append("name", data.name);
 
-  // Swagger dokümanında nesne olarak görünse de,
-  // Multipart isteğiyle yeni ürün oluştururken marka ismini gönderiyoruz.
-  // Backend genellikle bu ismi "brand" veya "brandName" parametresiyle karşılar.
   formData.append("brandName", data.brandName);
 
   formData.append("categoryId", data.categoryId.toString());
@@ -65,7 +64,7 @@ export const updateProduct = async (
   if (data.imageFile) {
     formData.append("image", data.imageFile);
   }
-  console.log(formData, "formDataUpdateeee");
+  console.log([...formData.entries()]);
   const response = await apiClient.put<Product>(
     `/products/${productId}`,
     formData,

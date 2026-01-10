@@ -6,7 +6,6 @@ import Navbar from "../components/layout/Navbar";
 
 // export default HomePage;
    const HeroSection = () => {
-            //const { isLoggedIn, login } = useAuth();
             return (
                 <section className="container mx-auto px-6 py-24 flex flex-col md:flex-row items-center">
                     <div className="md:w-1/2">

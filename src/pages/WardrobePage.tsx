@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/layout/Navbar";
 import AddItemModal from "../components/layout/AddItemModal";
 import UpdateProductModal from "../components/layout/UpdateProductModal";
@@ -32,6 +32,7 @@ const WardrobePage = () => {
         getCategories(),
       ]);
       setProducts(productsData);
+      console.log(productsData, "productsData");
       setCategories(categoriesData);
 
       if (productsData.length > 0 && !selectedItemId) {
@@ -45,6 +46,7 @@ const WardrobePage = () => {
   };
 
   const handleOpenEditModal = (product: Product) => {
+    console.log("EDIT TIKLANDI, PRODUCT:", product);
     setEditingProduct(product);
     setIsEditModalOpen(true);
   };

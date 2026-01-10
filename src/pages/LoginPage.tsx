@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth"; // Gerçek hook'umuzu import ediyoruz
-
-const LoginPage = () => { 
+import { useAuth } from "../contexts/AuthContext";
+const LoginPage = () => {
   // --- State Yönetimi ---
   // Form alanlarındaki verileri tutmak için state'ler.
   const [email, setEmail] = useState("");

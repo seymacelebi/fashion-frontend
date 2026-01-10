@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+// Dosya yolu hatası düzeltildi: Proje yapınıza uygun olarak "../../" dizinine çekildi.
 import {
-  createProduct,
   updateProduct,
   getCategories,
+  getProductById,
 } from "../../services/productService";
 import { Season, Style } from "../../types";
 
@@ -10,7 +11,8 @@ const UpdateProductModal = ({
   isOpen,
   onClose,
   onSuccess,
-  initialData = null,
+  productId = null, // Düzenlenecek ürünün ID'si
+  initialData = null, // Opsiyonel: Veri dışarıdan da aktarılabilir
 }) => {
   const [imageUrlPreview, setImageUrlPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -27,36 +29,60 @@ const UpdateProductModal = ({
   });
 
   useEffect(() => {
-    if (isOpen) {
-      const fetchCategories = async () => {
-        try {
-          const data = await getCategories();
-          setCategories(data);
-        } catch (error) {
-          console.error("Kategoriler yüklenemedi:", error);
-        }
-      };
-      fetchCategories();
+    if (!isOpen || !initialData) return;
 
-      if (initialData) {
-        setFormData({
-          name: initialData.name || "",
-          brandName: initialData.brand?.name || "",
-          categoryId: initialData.categoryId || 0,
-          season: initialData.season || Season.SUMMER,
-          style: initialData.style || Style.CASUAL,
-          color: initialData.color || "",
-        });
-        setImageUrlPreview(initialData.imageUrl);
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const catData = await getCategories();
+        setCategories(catData);
+
+        console.log("🟡 initialData.categoryName:", initialData.categoryName);
+        console.log(
+          "🟡 catData names:",
+          catData.map((c) => c.name)
+        );
+
+        const matchedCategory = catData.find(
+          (c) =>
+            c.name.trim().toLowerCase() ===
+            initialData.categoryName?.trim().toLowerCase()
+        );
+
+        console.log("🟢 matchedCategory:", matchedCategory);
+
+        let dataToFill = initialData;
+
+        if (productId && !initialData) {
+          dataToFill = await getProductById(productId);
+        }
+
+        if (dataToFill) {
+          setFormData({
+            name: dataToFill.name || "",
+            brandName: dataToFill.brand?.name || dataToFill.brandName || "",
+            categoryId: matchedCategory?.id || 0,
+            season: dataToFill.season || Season.SUMMER,
+            style: dataToFill.style || Style.CASUAL,
+            color: dataToFill.color || "",
+          });
+          setImageUrlPreview(dataToFill.imageUrl);
+        }
+      } catch (error) {
+        console.error("Veriler yüklenirken hata oluştu:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, [isOpen, initialData]);
+    };
+
+    fetchData();
+  }, [isOpen, initialData, productId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "categoryId" ? parseInt(value) : value,
+      [name]: name === "categoryId" ? parseInt(value, 10) : value,
     }));
   };
 
@@ -64,40 +90,45 @@ const UpdateProductModal = ({
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
+      if (imageUrlPreview && !imageUrlPreview.startsWith("http")) {
+        URL.revokeObjectURL(imageUrlPreview);
+      }
       setImageUrlPreview(URL.createObjectURL(file));
     }
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.categoryId) {
+    if (!formData.name || !formData.categoryId || formData.categoryId === 0) {
       alert("Lütfen zorunlu alanları doldurun.");
       return;
     }
 
     setIsLoading(true);
     try {
-      // imageFile: selectedFile -> Eğer kullanıcı yeni resim seçtiyse o gider, seçmediyse null gider (backend eskiyi korur)
-      const productData = { ...formData, imageFile: selectedFile };
+      const updateData = {
+        ...formData,
+        imageFile: selectedFile,
+      };
 
-      if (initialData) {
-        await updateProduct(initialData.id, productData);
-      } else {
-        if (!selectedFile) return alert("Resim seçmelisiniz.");
-        await createProduct(productData);
-      }
+      const currentId = productId || initialData?.id;
+      if (!currentId) throw new Error("Ürün ID'si bulunamadı.");
 
-      onSuccess();
+      await updateProduct(currentId, updateData);
+
+      if (onSuccess) onSuccess();
       handleCloseAndReset();
     } catch (error) {
-      console.error("Hata:", error);
-      alert("İşlem sırasında bir hata oluştu.");
+      console.error("Güncelleme sırasında hata:", error);
+      alert("Ürün güncellenirken bir hata oluştu.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCloseAndReset = () => {
-    onClose();
+    if (imageUrlPreview && !imageUrlPreview.startsWith("http")) {
+      URL.revokeObjectURL(imageUrlPreview);
+    }
     setFormData({
       name: "",
       brandName: "",
@@ -108,21 +139,20 @@ const UpdateProductModal = ({
     });
     setSelectedFile(null);
     setImageUrlPreview(null);
+    onClose();
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-2xl font-serif text-gray-900">
-            {initialData ? "Parçayı Düzenle" : "Yeni Parça Ekle"}
-          </h2>
+          <h2 className="text-2xl font-serif text-gray-900">Parçayı Düzenle</h2>
           <button
             onClick={handleCloseAndReset}
-            className="p-2 text-gray-400 hover:text-gray-600"
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -141,10 +171,10 @@ const UpdateProductModal = ({
           </button>
         </div>
 
-        {/* Body */}
+        {/* Form Body */}
         <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-          {/* Fotoğraf */}
-          <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative flex items-center justify-center cursor-pointer overflow-hidden">
+          {/* Fotoğraf Alanı */}
+          <div className="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 relative flex items-center justify-center cursor-pointer overflow-hidden group">
             <input
               type="file"
               accept="image/*"
@@ -152,13 +182,22 @@ const UpdateProductModal = ({
               className="absolute inset-0 opacity-0 z-10 cursor-pointer"
             />
             {imageUrlPreview ? (
-              <img
-                src={imageUrlPreview}
-                alt="Preview"
-                className="w-full h-full object-contain p-2"
-              />
+              <>
+                <img
+                  src={imageUrlPreview}
+                  alt="Önizleme"
+                  className="w-full h-full object-contain p-2"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-white text-sm font-medium">
+                    Fotoğrafı Değiştir
+                  </span>
+                </div>
+              </>
             ) : (
-              <span className="text-gray-400">Resim Seç</span>
+              <div className="text-center text-gray-400">
+                <p>Resim Seç</p>
+              </div>
             )}
           </div>
 
@@ -171,7 +210,8 @@ const UpdateProductModal = ({
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black outline-none"
+                placeholder="Ürün adı"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black outline-none transition-all"
               />
             </div>
             <div>
@@ -182,7 +222,8 @@ const UpdateProductModal = ({
                 name="brandName"
                 value={formData.brandName}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-black outline-none"
+                placeholder="Marka adı"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black outline-none transition-all"
               />
             </div>
             <div>
@@ -193,7 +234,7 @@ const UpdateProductModal = ({
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg bg-white"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-black"
               >
                 <option value={0}>Seçiniz</option>
                 {categories.map((c) => (
@@ -203,27 +244,55 @@ const UpdateProductModal = ({
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Mevsim
+              </label>
+              <select
+                name="season"
+                value={formData.season}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-black"
+              >
+                <option value={Season.SUMMER}>Yaz</option>
+                <option value={Season.WINTER}>Kış</option>
+                <option value={Season.SPRING}>Bahar</option>
+                <option value={Season.AUTUMN}>Sonbahar</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
+                Tarz
+              </label>
+              <select
+                name="style"
+                value={formData.style}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white outline-none focus:ring-2 focus:ring-black"
+              >
+                <option value={Style.CASUAL}>Günlük</option>
+                <option value={Style.SPORT}>Spor</option>
+                <option value={Style.CLASSIC}>Klasik</option>
+                <option value={Style.PARTY}>Parti</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50 border-t border-gray-100">
           <button
             onClick={handleCloseAndReset}
-            className="px-5 py-2 text-gray-600 font-medium"
+            className="px-5 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
           >
             İptal
           </button>
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="px-6 py-2 bg-black text-white rounded-lg font-medium shadow-lg hover:bg-gray-800 disabled:bg-gray-400"
+            className="px-6 py-2 bg-black text-white rounded-lg font-medium shadow-lg hover:bg-gray-800 disabled:bg-gray-400 transition-all"
           >
-            {isLoading
-              ? "Kaydediliyor..."
-              : initialData
-              ? "Güncelle"
-              : "Dolaba Ekle"}
+            {isLoading ? "Güncelleniyor..." : "Güncelle"}
           </button>
         </div>
       </div>

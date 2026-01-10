@@ -8,8 +8,7 @@ interface ItemDetailProps {
   onEdit: (product: Product) => void;
 }
 
-const ItemDetail: React.FC<ItemDetailProps> = ({ item, onDelete, onEdit}) => {
-  // Silme işlemi için onay mekanizması
+const ItemDetail: React.FC<ItemDetailProps> = ({ item, onDelete, onEdit }) => {
   const confirmAndDelete = () => {
     if (
       window.confirm(
@@ -22,7 +21,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, onDelete, onEdit}) => {
 
   return (
     <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm flex flex-col md:flex-row gap-8">
-      {/* Görsel Bölümü */}
       <div className="w-full md:w-1/3">
         <div className="aspect-[3/4] rounded-xl overflow-hidden relative group">
           <img
@@ -30,10 +28,11 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, onDelete, onEdit}) => {
             className="w-full h-full object-cover"
             alt={item.name}
           />
-          {/* Overlay: Düzenle ve Sil Butonları */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
             <button
-              onClick={() => onEdit(item)}
+              onClick={() => {
+                onEdit(item);
+              }}
               className="bg-white p-2.5 rounded-full shadow-lg hover:text-stone-900 transition-colors"
               title="Düzenle"
             >
