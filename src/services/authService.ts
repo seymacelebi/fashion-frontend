@@ -5,6 +5,7 @@ interface LoginResponse {
   userId: number;
   email: string;
   username: string;
+  city: string;
 }
 
 interface RegisterResponse {
@@ -12,17 +13,20 @@ interface RegisterResponse {
   userId: number;
   email: string;
   username: string;
+  city: string;
 }
 
 export const register = async (
   username: string,
   email: string,
-  password: string
+  password: string,
+  city: string
 ) => {
   const response = await apiClient.post<RegisterResponse>("/auth/register", {
     username,
     email,
     password,
+    city,
   });
 
   const mappedData = {
@@ -31,6 +35,7 @@ export const register = async (
       id: response.data.userId,
       email: response.data.email,
       name: response.data.username,
+      city: response.data.city,
     } as User,
   };
 
@@ -49,6 +54,7 @@ export const loginWithCredentials = async (email: string, password: string) => {
       id: response.data.userId,
       email: response.data.email,
       name: response.data.username,
+      city: response.data.city,
     },
   };
   console.log("Giriş başarılı:", mappedData);

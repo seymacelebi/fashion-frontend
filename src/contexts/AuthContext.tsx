@@ -125,11 +125,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const register = useCallback(
-    async (username: string, email: string, password: string) => {
+    async (username: string, email: string, password: string, city: string) => {
       dispatch({ type: "INITIALIZE" });
       try {
         // authService içindeki registerUser'ı çağırıyoruz
-        const data = await authService.register(username, email, password);
+        const data = await authService.register(
+          username,
+          email,
+          password,
+          city
+        );
 
         // Kayıt başarılıysa token ve user'ı kaydet
         localStorage.setItem("token", data.token);

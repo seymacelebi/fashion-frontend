@@ -1,10 +1,11 @@
 // src/types/auth.types.ts
 
 export interface User {
-  id: number; // Backend userId: number gönderdiği için number kalması daha iyi
+  id: number; 
   email: string;
   name: string;
   token?: string;
+  city: string; 
 }
 
 export interface AuthState {
@@ -13,6 +14,8 @@ export interface AuthState {
   user: User | null;
   error: string | null;
 }
+
+
 
 export interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;

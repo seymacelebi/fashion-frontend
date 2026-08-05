@@ -8,6 +8,7 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    city: "",
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,12 @@ const RegisterPage = () => {
 
     try {
       console.log(formData, "bbbb");
-      await register(formData.username, formData.email, formData.password);
+      await register(
+        formData.username,
+        formData.email,
+        formData.password,
+        formData.city
+      );
       navigate("/");
     } catch (err: any) {
       const message =
@@ -72,10 +78,8 @@ const RegisterPage = () => {
               </label>
               <input
                 type="text"
-                name="username" 
-                value={
-                  formData.username
-                } 
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
                 className="mt-1 block w-full px-4 py-3 border border-stone-300 rounded-md shadow-sm focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all outline-none"
                 placeholder="seymayilmaz"
@@ -94,6 +98,21 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full px-4 py-3 border border-stone-300 rounded-md shadow-sm focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all outline-none"
                 placeholder="ornek@email.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-stone-700">
+                Yaşadığın Şehir
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="mt-1 block w-full px-4 py-3 border border-stone-300 rounded-md shadow-sm focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all outline-none"
+                placeholder="İstanbul"
                 required
               />
             </div>

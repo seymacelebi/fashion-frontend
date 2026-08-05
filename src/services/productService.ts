@@ -1,4 +1,9 @@
-import type { Product, Category, ProductCreateData } from "../types";
+import type {
+  Product,
+  Category,
+  ProductCreateData,
+  Combination,
+} from "../types";
 
 import apiClient from "./apiClients";
 
@@ -79,4 +84,20 @@ export const updateProduct = async (
 export const deleteProduct = async (productId: number): Promise<void> => {
   console.log(productId, "productId");
   await apiClient.delete(`/products/${productId}`);
+};
+
+export const getSmartRecommendations = async (
+  temp: number,
+  weatherDesc: string,
+  occasion: string
+) => {
+  // Backend'deki RecommendationController endpoint'inize istek atar
+  const response = await apiClient.get<Combination[]>("/recommendations", {
+    params: {
+      temp,
+      weatherDesc,
+      occasion: occasion.toUpperCase(),
+    },
+  });
+  return response.data;
 };

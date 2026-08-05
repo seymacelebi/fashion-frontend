@@ -1,153 +1,199 @@
-// src/pages/CombinationPage.tsx
-import { useState } from "react";
-import ProductCard from "../components/layout/ProductCard";
-import AddPieceModal from "../components/layout/AddItemModal";
-import Navbar from "../components/layout/Navbar";
-import Footer from "../components/layout/Footer";
+import  { useState, useEffect } from "react";
+import apiClient from "../services/apiClients";
+import { Link } from "react-router-dom";
 
-// Örnek tipler
-interface Category {
-  id: number;
-  name: string;
-}
+const CombinationsPage = () => {
+  const [combinations, setCombinations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-interface Combination {
-  id: number;
-  name: string;
-  category: string;
-  imageUrl: string;
-}
+  useEffect(() => {
+    fetchCombinations();
+  }, []);
 
-// Başlangıç kombinleri
-const initialCombinations: Combination[] = [
-  {
-    id: 1,
-    name: "Hafta Sonu Kombini",
-    category: "Günlük",
-    imageUrl: "https://placehold.co/400x500/dbeafe/1e3a8a?text=Kombin+1",
-  },
-  {
-    id: 2,
-    name: "İş Toplantısı",
-    category: "İş",
-    imageUrl: "https://placehold.co/400x500/dbeafe/1e3a8a?text=Kombin+2",
-  },
-  {
-    id: 3,
-    name: "Akşam Yemeği",
-    category: "Özel Davet",
-    imageUrl: "https://placehold.co/400x500/dbeafe/1e3a8a?text=Kombin+3",
-  },
-];
-
-// Modal için kategoriler
-const categories: Category[] = [
-  { id: 0, name: "Tümü" },
-  { id: 1, name: "Günlük" },
-  { id: 2, name: "İş" },
-  { id: 3, name: "Özel Davet" },
-];
-
-function CombinationPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [combinations, setCombinations] =
-    useState<Combination[]>(initialCombinations);
-  const [activeCategory, setActiveCategory] = useState<string>("Tümü");
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
-  // Yeni parça ekleme (modal için)
-  const handleAddPiece = (formData: {
-    name: string;
-    imageUrl: string;
-    categoryId: number;
-  }) => {
-    const newCombination: Combination = {
-      id: combinations.length + 1,
-      name: formData.name,
-      imageUrl: formData.imageUrl,
-      category:
-        categories.find((c) => c.id === formData.categoryId)?.name || "Tümü",
-    };
-    setCombinations((prev) => [newCombination, ...prev]);
-    closeModal();
+  const fetchCombinations = async () => {
+    try {
+      setIsLoading(true);
+      // Backend'deki GET /api/v1/combinations endpoint'i çağrılıyor.
+      const response = await apiClient.get("/combinations");
+      setCombinations(response.data);
+    } catch (err) {
+      console.error("Kombinler yüklenemedi:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeleteCombination = (combinationId: number) => {
-    setCombinations((prev) => prev.filter((c) => c.id !== combinationId));
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bu kombini silmek istediğinize emin misiniz?")) return;
+
+    try {
+      await apiClient.delete(`/combinations/${id}`);
+      setCombinations((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      alert("Kombin silinirken bir hata oluştu.");
+    }
   };
 
-  // Filtrelenmiş kombinler
-  const filteredCombinations = combinations.filter(
-    (c) => activeCategory === "Tümü" || c.category === activeCategory
-  );
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Navbar />
-
-      <div className="bg-white">
-        <main className="w-full max-w-7xl mx-auto px-4 md:px-10 py-12">
-          <div className="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
-            <h1 className="text-4xl md:text-5xl font-serif-display font-bold">
+    <div className="min-h-screen bg-stone-50 p-6 md:p-12">
+      <div className="max-w-6xl mx-auto">
+        {/* Başlık ve Eylem Butonu */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+          <div>
+            <h1 className="text-4xl font-serif font-bold text-stone-900">
               Kombinlerim
             </h1>
-
-            <button
-              onClick={openModal}
-              className="bg-zinc-900 text-white px-5 py-2.5 rounded-md text-sm font-medium hover:bg-zinc-700 transition-colors flex items-center space-x-2"
+            <p className="text-stone-500 mt-2">
+              Kişisel stil arşiviniz ve hazırladığınız setler.
+            </p>
+          </div>
+          <Link
+            to="/outfit-builder"
+            className="inline-flex items-center justify-center px-6 py-3 bg-black text-white rounded-full font-medium hover:bg-stone-800 transition-all shadow-lg"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="w-5 h-5"
-              >
-                <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-              </svg>
-              <span>Yeni Kombin Ekle</span>
-            </button>
-          </div>
-
-          <div className="flex space-x-2 mb-8" id="categoryTabs">
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setActiveCategory(c.name)}
-                className={`tab-btn px-4 py-2 rounded-md text-sm transition-colors ${
-                  activeCategory === c.name
-                    ? "bg-zinc-900 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {filteredCombinations.map((c) => (
-              <ProductCard
-                key={c.id}
-                product={c}
-                onDelete={handleDeleteCombination}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 4v16m8-8H4"
               />
+            </svg>
+            Yeni Kombin Oluştur
+          </Link>
+        </div>
+
+        {combinations.length === 0 ? (
+          <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-stone-300">
+            <div className="mb-6 inline-block p-4 bg-stone-100 rounded-full">
+              <svg
+                className="w-12 h-12 text-stone-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-medium text-stone-900 mb-2">
+              Henüz kombin oluşturmadınız
+            </h3>
+            <p className="text-stone-500 mb-8">
+              Gardırobunuzdaki parçaları bir araya getirerek ilk kombinini
+              yaratın.
+            </p>
+            <Link
+              to="/outfit-builder"
+              className="text-black font-bold border-b-2 border-black pb-1 hover:text-stone-600 hover:border-stone-600 transition-all"
+            >
+              Kombin Oluşturucuya Git
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {combinations.map((combination) => (
+              <div
+                key={combination.id}
+                className="bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden group hover:shadow-xl transition-all duration-300"
+              >
+                {/* Kombin Önizleme (Üst Üste Binen Resimler) */}
+                <div className="relative h-64 bg-stone-100 p-4 flex items-center justify-center overflow-hidden">
+                  <div className="flex -space-x-12 hover:space-x-2 transition-all duration-500">
+                    {combination.products?.slice(0, 3).map((product, idx) => (
+                      <div
+                        key={product.id}
+                        className="w-32 h-44 bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden transform transition-transform group-hover:rotate-0"
+                        style={{
+                          transform: `rotate(${
+                            idx % 2 === 0 ? -5 : 5
+                          }deg) translateY(${idx === 1 ? -10 : 0}px)`,
+                          zIndex: 10 - idx,
+                        }}
+                      >
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-contain p-2"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Hızlı Eylem Butonu (Silme) */}
+                  <button
+                    onClick={() => handleDelete(combination.id)}
+                    className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-full shadow-sm backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Kombin Detayları */}
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-serif font-bold text-stone-900 truncate">
+                      {combination.name}
+                    </h3>
+                    <span className="text-xs font-medium px-2 py-1 bg-stone-100 rounded text-stone-500">
+                      {combination.products?.length} Parça
+                    </span>
+                  </div>
+                  <p className="text-sm text-stone-500 line-clamp-2 mb-4">
+                    {combination.description ||
+                      "Bu kombin için açıklama eklenmedi."}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-stone-50">
+                    <span className="text-xs text-stone-400">
+                      {new Date(combination.createdAt).toLocaleDateString(
+                        "tr-TR"
+                      )}
+                    </span>
+                    <span className="text-sm font-bold text-stone-900">
+                      {combination.totalValue?.toLocaleString("tr-TR", {
+                        style: "currency",
+                        currency: "TRY",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-        </main>
-
-        <Footer />
-
-        <AddPieceModal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          onSubmit={handleAddPiece}
-          categories={categories}
-        />
+        )}
       </div>
-    </>
+    </div>
   );
-}
+};
 
-export default CombinationPage;
+export default CombinationsPage;

@@ -54,7 +54,7 @@ export interface Product {
   color?: string;
   season?: Season;
   style?: Style;
- // brand?: Brand; 
+  // brand?: Brand;
   brandName?: string;
   price?: number;
 }
@@ -65,14 +65,21 @@ export interface Category {
   name: string;
 }
 
+export interface Combination {
+  id: number;
+  name: string;
+  products: Product[];
+  occasions: string[];
+}
+
 export interface ProductCreateData {
   name: string;
-  brandName: string; 
+  brandName: string;
   categoryId: number;
   color: string;
   season: Season;
   style: Style;
-  imageFile: File | null; 
+  imageFile: File | null;
 }
 
 // Sorumluluğu: Sadece Kombin veri modelini tanımlamak.
@@ -83,4 +90,18 @@ export interface Combination {
   name: string;
   category: string; // Veya Category tipi de olabilir
   imageUrl: string;
+}
+
+export interface ProductSummary {
+  id: number;
+  name: string;
+  imageUrl: string;
+  categoryName: string;
+  brandName: string;
+  price: number;
+}
+
+export interface SurpriseOutfitResponse {
+  products: ProductSummary[];
+  totalValue: number;
 }
